@@ -10,53 +10,56 @@
   </head>
   <body>
     <div class="container">
-      <div class="row">
-        <div class="col-md-6">
-          <input
-            type="text"
-            id="handle"
-            class="form-control mb-3"
-            placeholder="Enter handle"
-          />
+      <form id="inputForm">
+        <div class="row">
+          <div class="col-md-auto">
+            <input
+              type="text"
+              id="handle"
+              class="form-control mb-3"
+              placeholder="Enter handle"
+              required
+            />
+          </div>
+          <div class="col-md-auto">
+            <button
+              class="btn btn-primary mb-3"
+              type="submit"
+              onclick="findNotFollowingBack(document.getElementById('handle').value)"
+            >
+              Find Not Following Back
+            </button>
+            <button
+              class="btn btn-primary mb-3"
+              type="submit"
+              onclick="findNotYouFollowBack(document.getElementById('handle').value)"
+            >
+              Find Not Followed Back by You
+            </button>
+            <button
+              class="btn btn-primary mb-3"
+              type="submit"
+              onclick="findMutuals(document.getElementById('handle').value)"
+            >
+              Find Mutuals
+            </button>
+            <button
+              class="btn btn-primary mb-3"
+              type="submit"
+              onclick="findFollowers(document.getElementById('handle').value)"
+            >
+              Find Followers
+            </button>
+            <button
+              class="btn btn-primary mb-3"
+              type="submit"
+              onclick="findFollows(document.getElementById('handle').value)"
+            >
+              Find Followings
+            </button>
+          </div>
         </div>
-        <div class="col-md-6">
-          <button
-            class="btn btn-primary mb-3"
-            type="button"
-            onclick="findNotFollowingBack(document.getElementById('handle').value)"
-          >
-            Find Not Following Back
-          </button>
-          <button
-            class="btn btn-primary mb-3"
-            type="button"
-            onclick="findNotYouFollowBack(document.getElementById('handle').value)"
-          >
-            Find Not Followed Back by You
-          </button>
-          <button
-            class="btn btn-primary mb-3"
-            type="button"
-            onclick="findMutuals(document.getElementById('handle').value)"
-          >
-            Find Mutuals
-          </button>
-          <button
-            class="btn btn-primary mb-3"
-            type="button"
-            onclick="findFollowers(document.getElementById('handle').value)"
-          >
-            Find Followers
-          </button>
-          <button
-            class="btn btn-primary mb-3"
-            type="button"
-            onclick="findFollows(document.getElementById('handle').value)"
-          >
-            Find Followings
-          </button>
-        </div>
-      </div>
+      </form>
     </div>
     <div id="user-container" class="container"></div>
     <script
@@ -191,26 +194,31 @@
       }
 
       async function findNotFollowingBack(handle) {
+        if (handle == "") return;
         const data = await findUnmatchedData(handle);
         generateAllUserDataHTML(data.unmatchedFollows);
       }
 
       async function findNotYouFollowBack(handle) {
+        if (handle == "") return;
         const data = await findUnmatchedData(handle);
         generateAllUserDataHTML(data.unmatchedFollowers);
       }
 
       async function findMutuals(handle) {
+        if (handle == "") return;
         const data = await findUnmatchedData(handle);
         generateAllUserDataHTML(data.mutuals);
       }
 
       async function findFollowers(handle) {
+        if (handle == "") return;
         const data = await fetchFollowersWithPagination(handle);
         generateAllUserDataHTML(data);
       }
 
       async function findFollows(handle) {
+        if (handle == "") return;
         const data = await fetchFollowsWithPagination(handle);
         generateAllUserDataHTML(data);
       }
