@@ -7,6 +7,7 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <link href="main.css" rel="stylesheet" />
   </head>
   <body>
     <div class="container">
@@ -60,6 +61,15 @@
       </div>
     </div>
     <div id="user-container" class="container"></div>
+    <div
+      id="loaderOverlay"
+      class="overlay justify-content-center align-items-center"
+      style="display: none"
+    >
+      <div id="loader" class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
@@ -69,9 +79,31 @@
       let cursorFers = null;
       let cursorFs = null;
 
-      // Function to get followers
+      async function checkProfile(actor) {
+        try {
+          // Construct the URL with query parameters
+          const url = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${actor}`;
+
+          // Make the API request
+          const response = await fetch(url);
+
+          // Check if the response is OK (status code 200-299)
+          if (response.status === 400) {
+            return false;
+          } else if (!response.ok) {
+            return false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          throw error; // Re-throw the error to propagate it to the caller
+        }
+      }
+
       async function fetchFollowersWithPagination(actor, limit = 100) {
         try {
+          if (!(await checkProfile(actor))) return;
           let hasNextPage = true;
           var data = [];
           while (hasNextPage) {
@@ -84,7 +116,9 @@
             const response = await fetch(url);
 
             // Check if the response is OK (status code 200-299)
-            if (!response.ok) {
+            if (response.status === 400) {
+              throw new Error(`There is no data with the related handle!`);
+            } else if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
 
@@ -104,11 +138,13 @@
           return mergedArray;
         } catch (error) {
           console.error("Error fetching followers:", error);
+          return [];
         }
       }
 
       async function fetchFollowsWithPagination(actor, limit = 100) {
         try {
+          if (!(await checkProfile(actor))) return;
           let hasNextPage = true;
           var data = [];
           while (hasNextPage) {
@@ -121,7 +157,9 @@
             const response = await fetch(url);
 
             // Check if the response is OK (status code 200-299)
-            if (!response.ok) {
+            if (response.status === 400) {
+              throw new Error(`There is no data with the related handle!`);
+            } else if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
 
@@ -141,6 +179,7 @@
           return mergedArray;
         } catch (error) {
           console.error("Error fetching followers:", error);
+          return [];
         }
       }
 
@@ -148,46 +187,63 @@
         const followers = await fetchFollowersWithPagination(handle);
         const follows = await fetchFollowsWithPagination(handle);
 
-        const followerDids = followers.map((follower) => follower.did);
-        const followDids = follows.map((follow) => follow.did);
+        if (followers && follows) {
+          const followerDids = followers.map((follower) => follower.did);
+          const followDids = follows.map((follow) => follow.did);
 
-        const mutuals = followers.filter((follower) =>
-          followDids.includes(follower.did)
-        );
-        const unmatchedFollowers = followers.filter(
-          (follower) => !followDids.includes(follower.did)
-        );
-        const unmatchedFollows = follows.filter(
-          (follow) => !followerDids.includes(follow.did)
-        );
+          const mutuals = followers.filter((follower) =>
+            followDids.includes(follower.did)
+          );
+          const unmatchedFollowers = followers.filter(
+            (follower) => !followDids.includes(follower.did)
+          );
+          const unmatchedFollows = follows.filter(
+            (follow) => !followerDids.includes(follow.did)
+          );
 
-        return {
-          mutuals,
-          unmatchedFollowers,
-          unmatchedFollows,
-        };
+          return {
+            mutuals,
+            unmatchedFollowers,
+            unmatchedFollows,
+          };
+        }
       }
 
       function generateAllUserDataHTML(dataArray) {
         let html = "";
-        dataArray.forEach((userData) => {
-          html += `
-            <div class="user mb-3 border p-3">
-              <div class="row">
-                <div class="col-md-auto">
-                  <img src="${userData.avatar}" alt="Avatar" width="50" height="50" class="rounded-circle me-2">
-                </div>
-                <div class="col">
-                  <div class="user-info">
-                    <h6 class="fw-bold">${userData.displayName}</h6>
-                    <p class="text-muted mb-0">@${userData.handle}</p>
-                    <p class="mb-0">${userData.description}</p>
+        if (dataArray) {
+          dataArray.forEach((userData) => {
+            html += `
+            <a href="https://bsky.app/profile/${
+              userData.handle
+            }" class="user-link">
+              <div class="user mb-3 border p-3">
+                <div class="row">
+                  <div class="col-md-auto">
+                    <img src="${
+                      userData.avatar
+                    }" alt="Avatar" width="50" height="50" class="rounded-circle me-2">
+                  </div>
+                  <div class="col">
+                      <div class="user-info">
+                        <h6 class="fw-bold">${
+                          userData.displayName || "No display name"
+                        }</h6>
+                        <p class="text-muted mb-0">@${
+                          userData.handle || "No handle"
+                        }</p>
+                        <p class="mb-0">${
+                          userData.description || "No description"
+                        }</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </a>
           `;
-        });
+          });
+        }
         document.getElementById("user-container").innerHTML = html;
       }
 
@@ -197,40 +253,47 @@
       });
 
       function checkError(value) {
+        document.getElementById("loaderOverlay").style.display = "flex";
         if (value == "") {
           handler.style.borderColor = "red";
-          return;
-        }
+          document.getElementById("loaderOverlay").style.display = "none";
+          return true;
+        } else return false;
       }
 
       async function findNotFollowingBack(handle) {
-        checkError(handle);
+        if (checkError(handle)) return;
         const data = await findUnmatchedData(handle);
-        generateAllUserDataHTML(data.unmatchedFollows);
+        if (data) generateAllUserDataHTML(data.unmatchedFollows);
+        document.getElementById("loaderOverlay").style.display = "none";
       }
 
       async function findNotYouFollowBack(handle) {
-        checkError(handle);
+        if (checkError(handle)) return;
         const data = await findUnmatchedData(handle);
-        generateAllUserDataHTML(data.unmatchedFollowers);
+        if (data) generateAllUserDataHTML(data.unmatchedFollowers);
+        document.getElementById("loaderOverlay").style.display = "none";
       }
 
       async function findMutuals(handle) {
-        checkError(handle);
+        if (checkError(handle)) return;
         const data = await findUnmatchedData(handle);
-        generateAllUserDataHTML(data.mutuals);
+        if (data) generateAllUserDataHTML(data.mutuals);
+        document.getElementById("loaderOverlay").style.display = "none";
       }
 
       async function findFollowers(handle) {
-        checkError(handle);
+        if (checkError(handle)) return;
         const data = await fetchFollowersWithPagination(handle);
-        generateAllUserDataHTML(data);
+        if (data) generateAllUserDataHTML(data);
+        document.getElementById("loaderOverlay").style.display = "none";
       }
 
       async function findFollows(handle) {
-        checkError(handle);
+        if (checkError(handle)) return;
         const data = await fetchFollowsWithPagination(handle);
-        generateAllUserDataHTML(data);
+        if (data) generateAllUserDataHTML(data);
+        document.getElementById("loaderOverlay").style.display = "none";
       }
     </script>
   </body>
