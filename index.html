@@ -1,126 +1,358 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Under Maintenance</title>
     <link
-      href="https://fonts.googleapis.com/css?family=Raleway:400,700"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
     />
     <link
-      href="https://fonts.googleapis.com/css?family=Passion+One:900"
       rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
-    <style>
-      * {
-        -webkit-box-sizing: border-box;
-        box-sizing: border-box;
-      }
-
-      body {
-        padding: 0;
-        margin: 0;
-      }
-
-      #notfound {
-        position: relative;
-        height: 100vh;
-      }
-
-      #notfound .notfound {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-      }
-
-      .notfound {
-        max-width: 710px;
-        width: 100%;
-        padding-left: 190px;
-        line-height: 1.4;
-      }
-
-      .notfound .notfound-404 {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 150px;
-        height: 150px;
-      }
-
-      .notfound .notfound-404 h1 {
-        font-family: "Passion One", cursive;
-        color: #00b5c3;
-        font-size: 150px;
-        letter-spacing: 15.5px;
-        margin: 0px;
-        font-weight: 900;
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        -webkit-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-      }
-
-      .notfound h2 {
-        font-family: "Raleway", sans-serif;
-        color: #292929;
-        font-size: 28px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2.5px;
-        margin-top: 0;
-      }
-
-      .notfound p {
-        font-family: "Raleway", sans-serif;
-        font-size: 14px;
-        font-weight: 400;
-        margin-top: 0;
-        margin-bottom: 15px;
-        color: #333;
-      }
-
-      .notfound a:hover {
-        color: #fff;
-        background-color: #00b5c3;
-      }
-
-      @media only screen and (max-width: 480px) {
-        .notfound {
-          text-align: center;
-        }
-        .notfound .notfound-404 {
-          position: relative;
-          width: 100%;
-          margin-bottom: 15px;
-        }
-        .notfound {
-          padding-left: 15px;
-          padding-right: 15px;
-        }
-      }
-    </style>
+    <link href="main.css" rel="stylesheet" />
   </head>
   <body>
-    <div id="notfound">
-      <div class="notfound">
-        <div class="notfound-404">
-          <h1>:(</h1>
+    <button onclick="help()" class="help-button">
+      <i class="bi bi-question-circle"></i>
+    </button>
+    <div class="container">
+      <div class="row my-3">
+        <div class="col d-flex justify-content-center">
+          <p>© 2024 Made with <span style="color: pink">♡</span> by&nbsp;</p>
+          <a href="https://bsky.app/profile/aeri.ispost.ing" style="color: pink"
+            >Ency</a
+          >
         </div>
-        <h2>Page is under maintenance.</h2>
-        <p>
-          Currently updating on auto-unfollow. Oh, mind to share your thought
-          <a href="https://tellonym.me/cyenc">here</a>? HMU on
-          <a href="https://bsky.app/profile/aeri.ispost.ing">BlueSky</a>.
-        </p>
+      </div>
+      <div class="row">
+        <div class="col-md-auto">
+          <input
+            type="text"
+            id="handle"
+            class="form-control mb-3"
+            placeholder="Enter handle"
+            required
+          />
+        </div>
+        <div class="col-md-auto">
+          <button
+            class="btn btn-primary mb-3"
+            type="submit"
+            onclick="findNotFollowingBack(document.getElementById('handle').value)"
+          >
+            Find Not Following Back
+          </button>
+          <button
+            class="btn btn-primary mb-3"
+            type="submit"
+            onclick="findNotYouFollowBack(document.getElementById('handle').value)"
+          >
+            Find Not Followed Back by You
+          </button>
+          <button
+            class="btn btn-primary mb-3"
+            type="submit"
+            onclick="findMutuals(document.getElementById('handle').value)"
+          >
+            Find Mutuals
+          </button>
+          <button
+            class="btn btn-primary mb-3"
+            type="submit"
+            onclick="findFollowers(document.getElementById('handle').value)"
+          >
+            Find Followers
+          </button>
+          <button
+            class="btn btn-primary mb-3"
+            type="submit"
+            onclick="findFollows(document.getElementById('handle').value)"
+          >
+            Find Followings
+          </button>
+        </div>
       </div>
     </div>
+    <div id="user-container" class="container"></div>
+    <div
+      id="loaderOverlay"
+      class="overlay justify-content-center align-items-center"
+      style="display: none"
+    >
+      <div id="loader" class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div
+      class="modal fade"
+      id="helpModal"
+      tabindex="-1"
+      aria-labelledby="helpModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="helpModalLabel">Help</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Unfollow automatically? You will be redirected to another webpage
+            and required to log in.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="okButton">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      let cursorFers = null;
+      let cursorFs = null;
+
+      async function checkProfile(actor) {
+        try {
+          // Construct the URL with query parameters
+          const url = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${actor}`;
+
+          // Make the API request
+          const response = await fetch(url);
+
+          // Check if the response is OK (status code 200-299)
+          if (response.status === 400) {
+            return false;
+          } else if (!response.ok) {
+            return false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          throw error; // Re-throw the error to propagate it to the caller
+        }
+      }
+
+      async function fetchFollowersWithPagination(actor, limit = 100) {
+        try {
+          if (!(await checkProfile(actor))) return;
+          let hasNextPage = true;
+          var data = [];
+          while (hasNextPage) {
+            // Construct the URL with query parameters
+            const url = `https://public.api.bsky.app/xrpc/app.bsky.graph.getFollowers?actor=${actor}&limit=${limit}${
+              cursorFers ? `&cursor=${cursorFers}` : ""
+            }`;
+
+            // Make the API request
+            const response = await fetch(url);
+
+            // Check if the response is OK (status code 200-299)
+            if (response.status === 400) {
+              throw new Error(`There is no data with the related handle!`);
+            } else if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Parse the JSON data from the response
+            const responseData = await response.json();
+
+            // Append the data to the 'data' array
+            data.push(responseData);
+
+            // Extract the cursor for the next page
+            cursorFers = responseData.cursor;
+
+            // Check if there are more pages
+            hasNextPage = cursorFers != null;
+          }
+          const mergedArray = data.flatMap((set) => set.followers);
+          return mergedArray;
+        } catch (error) {
+          console.error("Error fetching followers:", error);
+          return [];
+        }
+      }
+
+      async function fetchFollowsWithPagination(actor, limit = 100) {
+        try {
+          if (!(await checkProfile(actor))) return;
+          let hasNextPage = true;
+          var data = [];
+          while (hasNextPage) {
+            // Construct the URL with query parameters
+            const url = `https://public.api.bsky.app/xrpc/app.bsky.graph.getFollows?actor=${actor}&limit=${limit}${
+              cursorFs ? `&cursor=${cursorFs}` : ""
+            }`;
+
+            // Make the API request
+            const response = await fetch(url);
+
+            // Check if the response is OK (status code 200-299)
+            if (response.status === 400) {
+              throw new Error(`There is no data with the related handle!`);
+            } else if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Parse the JSON data from the response
+            const responseData = await response.json();
+
+            // Append the data to the 'data' array
+            data.push(responseData);
+
+            // Extract the cursor for the next page
+            cursorFs = responseData.cursor;
+
+            // Check if there are more pages
+            hasNextPage = cursorFs != null;
+          }
+          const mergedArray = data.flatMap((set) => set.follows);
+          return mergedArray;
+        } catch (error) {
+          console.error("Error fetching followers:", error);
+          return [];
+        }
+      }
+
+      async function findUnmatchedData(handle) {
+        const followers = await fetchFollowersWithPagination(handle);
+        const follows = await fetchFollowsWithPagination(handle);
+
+        if (followers && follows) {
+          const followerDids = followers.map((follower) => follower.did);
+          const followDids = follows.map((follow) => follow.did);
+
+          const mutuals = followers.filter((follower) =>
+            followDids.includes(follower.did)
+          );
+          const unmatchedFollowers = followers.filter(
+            (follower) => !followDids.includes(follower.did)
+          );
+          const unmatchedFollows = follows.filter(
+            (follow) => !followerDids.includes(follow.did)
+          );
+
+          return {
+            mutuals,
+            unmatchedFollowers,
+            unmatchedFollows,
+          };
+        }
+      }
+
+      function generateAllUserDataHTML(dataArray) {
+        let html = "";
+        if (dataArray) {
+          dataArray.forEach((userData) => {
+            html += `
+            <a href="https://bsky.app/profile/${
+              userData.handle
+            }" class="user-link">
+              <div class="user mb-3 border p-3">
+                <div class="row">
+                  <div class="col-2">
+                    <img src="${
+                      userData.avatar
+                    }" alt="Avatar" width="50" height="50" class="rounded-circle me-2">
+                  </div>
+                  <div class="col-10">
+                      <div class="user-info">
+                        <h6 class="fw-bold">${
+                          userData.displayName || "No display name"
+                        }</h6>
+                        <p class="text-muted mb-0">@${
+                          userData.handle || "No handle"
+                        }</p>
+                        <p class="mb-0">${
+                          userData.description || "No description"
+                        }</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          `;
+          });
+        }
+        document.getElementById("user-container").innerHTML = html;
+      }
+
+      const handler = document.getElementById("handle");
+      handler.addEventListener("input", function () {
+        this.removeAttribute("style");
+      });
+
+      function checkError(value) {
+        document.getElementById("loaderOverlay").style.display = "flex";
+        if (value == "") {
+          handler.style.borderColor = "red";
+          document.getElementById("loaderOverlay").style.display = "none";
+          return true;
+        } else return false;
+      }
+
+      async function findNotFollowingBack(handle) {
+        if (checkError(handle)) return;
+        const data = await findUnmatchedData(handle);
+        if (data) generateAllUserDataHTML(data.unmatchedFollows);
+        document.getElementById("loaderOverlay").style.display = "none";
+      }
+
+      async function findNotYouFollowBack(handle) {
+        if (checkError(handle)) return;
+        const data = await findUnmatchedData(handle);
+        if (data) generateAllUserDataHTML(data.unmatchedFollowers);
+        document.getElementById("loaderOverlay").style.display = "none";
+      }
+
+      async function findMutuals(handle) {
+        if (checkError(handle)) return;
+        const data = await findUnmatchedData(handle);
+        if (data) generateAllUserDataHTML(data.mutuals);
+        document.getElementById("loaderOverlay").style.display = "none";
+      }
+
+      async function findFollowers(handle) {
+        if (checkError(handle)) return;
+        const data = await fetchFollowersWithPagination(handle);
+        if (data) generateAllUserDataHTML(data);
+        document.getElementById("loaderOverlay").style.display = "none";
+      }
+
+      async function findFollows(handle) {
+        if (checkError(handle)) return;
+        const data = await fetchFollowsWithPagination(handle);
+        if (data) generateAllUserDataHTML(data);
+        document.getElementById("loaderOverlay").style.display = "none";
+      }
+
+      function help() {
+        var myModal = new bootstrap.Modal(document.getElementById("helpModal"));
+        myModal.show();
+
+        document
+          .getElementById("okButton")
+          .addEventListener("click", function () {
+            window.location.href =
+              "https://encyclops.github.io/bsky-tracker.aeri";
+          });
+      }
+    </script>
   </body>
 </html>
